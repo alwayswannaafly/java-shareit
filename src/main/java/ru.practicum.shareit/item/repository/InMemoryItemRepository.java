@@ -29,7 +29,7 @@ public class InMemoryItemRepository {
 
     public List<Item> findAllByOwner(Long ownerId) {
         return items.values().stream()
-                .filter(item -> item.getOwner().equals(ownerId))
+                .filter(item -> item.getOwner().getId().equals(ownerId))
                 .toList();
     }
 

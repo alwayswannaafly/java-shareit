@@ -124,62 +124,21 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsByUser(Long userId, String state) {
-        List<Booking> bookings;
-        switch (state) {
-            case "CURRENT":
-                bookings = bookingRepository.findByBooker_IdAndStatusAndEndDateAfter(userId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "PAST":
-                bookings = bookingRepository.findByBooker_IdAndStatusAndEndDateBefore(userId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "FUTURE":
-                bookings = bookingRepository.findByBooker_IdAndStatusAndStartDateAfter(userId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "WAITING":
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.WAITING);
-                break;
-            case "REJECTED":
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, BookingStatus.REJECTED);
-                break;
-            default:
-                bookings = bookingRepository.findByBooker_Id(userId);
-                break;
-        }
-
+        List<Booking> bookings = bookingRepository.findBookingsByUserWithState(userId, state, LocalDateTime.now());
         return bookings.stream().map(this::toBookingDto).collect(Collectors.toList());
     }
 
     @Override
     public List<BookingDto> getBookingsByOwner(Long ownerId, String state) {
-        User owner = userRepository.findById(ownerId)
+        userRepository.findById(ownerId)
                 .orElseThrow(() -> new IdNotFoundException("User not found with id: " + ownerId));
 
         List<Item> items = itemRepository.findByOwnerId(ownerId);
         if (items.isEmpty()) {
             throw new InvalidInputException("User has no items, so cannot retrieve bookings as owner");
         }
-        List<Booking> bookings;
-        switch (state) {
-            case "CURRENT":
-                bookings = bookingRepository.findByItem_Owner_IdAndStatusAndEndDateAfter(ownerId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "PAST":
-                bookings = bookingRepository.findByItem_Owner_IdAndStatusAndEndDateBefore(ownerId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "FUTURE":
-                bookings = bookingRepository.findByItem_Owner_IdAndStatusAndStartDateAfter(ownerId, BookingStatus.APPROVED, LocalDateTime.now());
-                break;
-            case "WAITING":
-                bookings = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.WAITING);
-                break;
-            case "REJECTED":
-                bookings = bookingRepository.findByItem_Owner_IdAndStatus(ownerId, BookingStatus.REJECTED);
-                break;
-            default:
-                bookings = bookingRepository.findByItem_Owner_Id(ownerId);
-                break;
-        }
 
+        List<Booking> bookings = bookingRepository.findBookingsByOwnerWithState(ownerId, state, LocalDateTime.now());
         return bookings.stream().map(this::toBookingDto).collect(Collectors.toList());
     }
 

@@ -12,32 +12,32 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByItem_IdAndStatus(Long itemId, BookingStatus status);
-
-    List<Booking> findByBooker_Id(Long bookerId);
-
-    List<Booking> findByItem_Owner_Id(Long ownerId);
-
-    List<Booking> findByItem_Id(Long itemId);
-
     List<Booking> findByBooker_IdAndItem_IdAndStatusAndEndDateBefore(Long bookerId, Long itemId,
                                                                      BookingStatus status, LocalDateTime endDate);
 
-    List<Booking> findByBooker_IdAndStatusAndEndDateAfter(Long userId, BookingStatus bookingStatus, LocalDateTime now);
+    @Query("SELECT b FROM Booking b WHERE b.booker.id = :userId AND " +
+            "(:state = 'ALL' OR " +
+            "(:state = 'CURRENT' AND b.status = 'APPROVED' AND b.endDate > :now AND b.startDate < :now) OR " +
+            "(:state = 'PAST' AND b.status = 'APPROVED' AND b.endDate < :now) OR " +
+            "(:state = 'FUTURE' AND b.status = 'APPROVED' AND b.startDate > :now) OR " +
+            "(:state = 'WAITING' AND b.status = 'WAITING') OR " +
+            "(:state = 'REJECTED' AND b.status = 'REJECTED')) " +
+            "ORDER BY b.startDate DESC")
+    List<Booking> findBookingsByUserWithState(@Param("userId") Long userId,
+                                              @Param("state") String state,
+                                              @Param("now") LocalDateTime now);
 
-    List<Booking> findByBooker_IdAndStatusAndEndDateBefore(Long userId, BookingStatus bookingStatus, LocalDateTime now);
-
-    List<Booking> findByBooker_IdAndStatusAndStartDateAfter(Long userId, BookingStatus bookingStatus, LocalDateTime now);
-
-    List<Booking> findByBooker_IdAndStatus(Long userId, BookingStatus bookingStatus);
-
-    List<Booking> findByItem_Owner_IdAndStatusAndEndDateAfter(Long ownerId, BookingStatus bookingStatus, LocalDateTime now);
-
-    List<Booking> findByItem_Owner_IdAndStatusAndEndDateBefore(Long ownerId, BookingStatus bookingStatus, LocalDateTime now);
-
-    List<Booking> findByItem_Owner_IdAndStatusAndStartDateAfter(Long ownerId, BookingStatus bookingStatus, LocalDateTime now);
-
-    List<Booking> findByItem_Owner_IdAndStatus(Long ownerId, BookingStatus bookingStatus);
+    @Query("SELECT b FROM Booking b WHERE b.item.owner.id = :ownerId AND " +
+            "(:state = 'ALL' OR " +
+            "(:state = 'CURRENT' AND b.status = 'APPROVED' AND b.endDate > :now AND b.startDate < :now) OR " +
+            "(:state = 'PAST' AND b.status = 'APPROVED' AND b.endDate < :now) OR " +
+            "(:state = 'FUTURE' AND b.status = 'APPROVED' AND b.startDate > :now) OR " +
+            "(:state = 'WAITING' AND b.status = 'WAITING') OR " +
+            "(:state = 'REJECTED' AND b.status = 'REJECTED')) " +
+            "ORDER BY b.startDate DESC")
+    List<Booking> findBookingsByOwnerWithState(@Param("ownerId") Long ownerId,
+                                               @Param("state") String state,
+                                               @Param("now") LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.item.id = :itemId AND b.status = :status AND b.endDate < :now ORDER BY b.endDate DESC")
     List<Booking> findLastBookings(@Param("itemId") Long itemId,
@@ -48,4 +48,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findNextBookings(@Param("itemId") Long itemId,
                                    @Param("status") BookingStatus status,
                                    @Param("now") LocalDateTime now);
+
+    List<Booking> findByItem_Id(Long itemId);
 }
