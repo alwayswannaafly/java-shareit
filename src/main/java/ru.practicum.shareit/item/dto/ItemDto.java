@@ -5,9 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingSimpleDto;
+import ru.practicum.shareit.user.dto.UserSimpleDto;
 import ru.practicum.shareit.validation.OnCreate;
 
+import java.util.List;
+
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {
     private Long id;
@@ -23,5 +29,8 @@ public class ItemDto {
     @NotNull(message = "Available field is required", groups = OnCreate.class)
     private Boolean available;
 
-    private Long owner; // будет установлен из заголовка X-Sharer-User-Id
+    private UserSimpleDto owner;
+    private BookingSimpleDto lastBooking;
+    private BookingSimpleDto nextBooking;
+    private List<CommentDto> comments;
 }

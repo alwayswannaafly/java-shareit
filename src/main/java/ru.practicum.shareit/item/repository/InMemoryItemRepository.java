@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.repository;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.model.Item;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,7 +29,7 @@ public class InMemoryItemRepository {
 
     public List<Item> findAllByOwner(Long ownerId) {
         return items.values().stream()
-                .filter(item -> item.getOwner().equals(ownerId))
+                .filter(item -> item.getOwner().getId().equals(ownerId))
                 .toList();
     }
 

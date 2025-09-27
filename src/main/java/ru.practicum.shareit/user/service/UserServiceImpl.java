@@ -8,7 +8,7 @@ import ru.practicum.shareit.exception.InvalidInputException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.repository.InMemoryUserRepository;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final InMemoryUserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(InMemoryUserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -34,13 +34,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
-        Optional<User> existingUserOpt = userRepository.findById(id);
-        if (existingUserOpt.isEmpty()) {
-            throw new IdNotFoundException("User not found with id: " + id);
-        }
-
-        User existingUser = existingUserOpt.get();
-
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IdNotFoundException("User not found with id: " + id));
 
         if (userDto.getName() != null) {
             if (userDto.getName().trim().isEmpty()) {
@@ -92,13 +87,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateEmailUniqueness(String email, Long excludeId) {
-        List<User> existingUsers = userRepository.findAll().stream()
-                .filter(u -> !u.getId().equals(excludeId))
-                .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                .toList();
-
-        if (!existingUsers.isEmpty()) {
-            throw new AlreadyExistsException("Email already exists: " + email);
+        Optional<User> existingUser = userRepository.findByEmail(email);
+        if (existingUser.isPresent()) {
+            if (excludeId == null || !existingUser.get().getId().equals(excludeId)) {
+                throw new AlreadyExistsException("Email already exists: " + email);
+            }
         }
     }
 }
