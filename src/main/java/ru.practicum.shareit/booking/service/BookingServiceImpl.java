@@ -4,15 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.IdNotFoundException;
 import ru.practicum.shareit.exception.InvalidInputException;
+import ru.practicum.shareit.item.dto.ItemSimpleDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -28,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final ItemService itemService;
+    private final BookingMapper bookingMapper;
 
     @Autowired
     public BookingServiceImpl(
@@ -35,13 +39,15 @@ public class BookingServiceImpl implements BookingService {
             UserRepository userRepository,
             ItemRepository itemRepository,
             UserService userService,
-            ItemService itemService
+            ItemService itemService,
+            BookingMapper bookingMapper
     ) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.userService = userService;
         this.itemService = itemService;
+        this.bookingMapper = bookingMapper;
     }
 
     @Override
@@ -143,13 +149,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BookingDto toBookingDto(Booking booking) {
-        BookingDto dto = new BookingDto();
-        dto.setId(booking.getId());
-        dto.setStartDate(booking.getStartDate());
-        dto.setEndDate(booking.getEndDate());
-        dto.setStatus(booking.getStatus());
-        dto.setBooker(userService.getUserById(booking.getBooker().getId()));
-        dto.setItem(itemService.getItemSimpleDto(booking.getItem().getId()));
-        return dto;
+        UserDto booker = userService.getUserById(booking.getBooker().getId());
+        ItemSimpleDto item = itemService.getItemSimpleDto(booking.getItem().getId());
+        return bookingMapper.toBookingDto(booking, booker, item);
     }
 }
