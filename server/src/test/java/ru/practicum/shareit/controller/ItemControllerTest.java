@@ -19,8 +19,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +62,45 @@ class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Test Item"));
+    }
+
+    @Test
+    void getItemById_ShouldReturnItem() throws Exception {
+        ItemDto itemDto = new ItemDto();
+        itemDto.setId(1L);
+        itemDto.setName("Found Item");
+
+        when(itemService.getItemById(eq(1L), eq(2L))).thenReturn(itemDto);
+
+        mockMvc.perform(get("/items/1")
+                        .header("X-Sharer-User-Id", 2L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Found Item"));
+    }
+
+    @Test
+    void updateItem_ShouldReturnUpdatedItem() throws Exception {
+        ItemDto updateDto = new ItemDto();
+        updateDto.setName("Updated Name");
+        updateDto.setDescription("Updated desc");
+        updateDto.setAvailable(false);
+
+        ItemDto responseDto = new ItemDto();
+        responseDto.setId(1L);
+        responseDto.setName("Updated Name");
+        responseDto.setDescription("Updated desc");
+        responseDto.setAvailable(false);
+
+        when(itemService.updateItem(any(ItemDto.class), eq(2L), eq(1L))).thenReturn(responseDto);
+
+        mockMvc.perform(patch("/items/1")
+                        .header("X-Sharer-User-Id", 2L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Updated Name"));
     }
 
     @Test
