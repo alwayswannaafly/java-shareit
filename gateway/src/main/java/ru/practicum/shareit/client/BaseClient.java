@@ -12,7 +12,8 @@ import java.util.List;
 
 public class BaseClient {
     protected final RestTemplate rest;
-    private static final String BASE_URL = "http://localhost:9090";
+    private static final String BASE_URL = System.getenv()
+            .getOrDefault("SERVER_URL", "http://shareit-server:9090");
 
     public BaseClient() {
         CloseableHttpClient httpClient = HttpClients.createDefault();
