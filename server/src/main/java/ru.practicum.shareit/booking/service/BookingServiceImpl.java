@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -52,6 +54,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto createBooking(BookingCreateDto bookingCreateDto, Long bookerId) {
+        log.info("=== START createBooking ===");
+        log.info("bookerId: {}, bookingCreateDto: {}", bookerId, bookingCreateDto);
+
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new IdNotFoundException("Booker not found with id: " + bookerId));
 
